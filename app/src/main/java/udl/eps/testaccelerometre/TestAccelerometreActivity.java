@@ -12,6 +12,8 @@ import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.List;
+
 public class TestAccelerometreActivity extends Activity implements SensorEventListener {
 
     private SensorManager sensorManager;
@@ -23,15 +25,6 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
 
     private boolean sensor;
 
-//    Verify sensors before use them -- N (pero no si el sensor especifi existeix)
-//    Register/unregister sensor listeners -- Y
-//    Don't block the onSensorChanged () method -- Y
-//    Choose sensor delays carefully -- Y(demanar)
-//    Avoid using deprecated methods or sensor types -- Y
-//    Test the sensor code on a physical device or use the Android Emulator --Y
-//    Remember do only gather sensor data in the foreground -- No
-//    <uses feature> element in the manifest file -- NO  ---> Afegit
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
@@ -40,14 +33,11 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
 
         findViews();
 
-        //Service --> Implements Listener --> Broadcast per canviar dades
-        //https://androidammy.blogspot.com/2015/05/accelerometer-shake-events-example-with.html
-
         viewSuperior.setBackgroundColor(Color.GREEN);
         viewInferior.setBackgroundColor(Color.YELLOW);
 
-        PackageManager manager = getPackageManager();
-        sensor = manager.hasSystemFeature(PackageManager.FEATURE_SENSOR_ACCELEROMETER);
+//        PackageManager manager = getPackageManager();
+//        sensor = manager.hasSystemFeature(PackageManager.FEATURE_SENSOR_ACCELEROMETER);
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
@@ -55,21 +45,39 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
             Sensor accelerometre = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
             Sensor luminic = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
 
-            sensorManager.registerListener(this,
-                    accelerometre,
-                    SensorManager.SENSOR_DELAY_NORMAL);
+            if (accelerometre != null){
+                sensorManager.registerListener(this,
+                        accelerometre,
+                        SensorManager.SENSOR_DELAY_NORMAL);
 
-            sensorManager.registerListener(this,
-                    luminic,
-                    SensorManager.SENSOR_DELAY_NORMAL);
+                String showCapabilities = "";
+
+                showCapabilities = showCapabilities + getText(R.string.shake) +
+                        "\nMax Delay: " + accelerometre.getMaxDelay() +
+                        "\nMin Delay: " + accelerometre.getMinDelay() +
+                        "\nPower: " + accelerometre.getPower() +
+                        "\nResolution: " + accelerometre.getResolution() +
+                        "\nVersion: " + accelerometre.getVersion();
+
+                viewMig.setText(showCapabilities);
+
+            } else {
+                viewMig.setText(getText(R.string.noAccel));
+            }
+
+//            if (luminic != null){
+//                sensorManager.registerListener(this,
+//                        luminic,
+//                        SensorManager.SENSOR_DELAY_NORMAL);
+//            } else {
+//                //TODO --> si no existeix el sensor luminic
+//            }
+
+
+
         }
         // register this class as a listener for the accelerometer sensor
 
-        if (sensor){
-            viewMig.setText(getText(R.string.shake));
-        } else {
-            viewMig.setText(getText(R.string.noAccel));
-        }
         lastUpdate = System.currentTimeMillis();
 
     }
@@ -83,6 +91,7 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
     @Override
     public void onSensorChanged(SensorEvent event) {
         getAccelerometer(event);
+//        getLuminic(event);
     }
 
     private void getAccelerometer(SensorEvent event) {
