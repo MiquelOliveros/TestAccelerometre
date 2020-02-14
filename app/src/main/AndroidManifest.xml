@@ -3,6 +3,7 @@
     package="udl.eps.testaccelerometre">
 
     <uses-feature android:name="android.hardware.sensor.accelerometer" android:required="true" />
+    <uses-feature android:name="android.hardware.sensor.light" android:required="true"/>
 
 
     <application

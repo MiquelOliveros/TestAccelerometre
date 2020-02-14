@@ -1,7 +1,6 @@
 package udl.eps.testaccelerometre;
 
 import android.app.Activity;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -9,10 +8,11 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.List;
+import java.util.Locale;
 
 public class TestAccelerometreActivity extends Activity implements SensorEventListener {
 
@@ -21,7 +21,13 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
     private TextView viewSuperior;
     private TextView viewMig;
     private TextView viewInferior;
+    private TextView viewInferiorIntensity;
+    private LinearLayout lyInferior;
     private long lastUpdate;
+
+    private float HIGH = 0f;
+    private float LOW = 1000f;
+    private float MEDIUM = 2000f;
 
     private boolean sensor;
 
@@ -34,7 +40,7 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
         findViews();
 
         viewSuperior.setBackgroundColor(Color.GREEN);
-        viewInferior.setBackgroundColor(Color.YELLOW);
+        lyInferior.setBackgroundColor(Color.YELLOW);
 
 //        PackageManager manager = getPackageManager();
 //        sensor = manager.hasSystemFeature(PackageManager.FEATURE_SENSOR_ACCELEROMETER);
@@ -65,16 +71,23 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
                 viewMig.setText(getText(R.string.noAccel));
             }
 
-//            if (luminic != null){
-//                sensorManager.registerListener(this,
-//                        luminic,
-//                        SensorManager.SENSOR_DELAY_NORMAL);
-//            } else {
-//                //TODO --> si no existeix el sensor luminic
-//            }
+            if (luminic != null){
+                sensorManager.registerListener(this,
+                        luminic,
+                        SensorManager.SENSOR_DELAY_NORMAL);
 
+                String showCapabilities = "";
 
+                HIGH = luminic.getMaximumRange();
 
+                showCapabilities = showCapabilities + getText(R.string.luminic) +
+                        "\nMax Rang: " + HIGH;
+
+                viewInferior.setText(showCapabilities);
+
+            } else {
+                viewInferior.setText(R.string.noLuminic);
+            }
         }
         // register this class as a listener for the accelerometer sensor
 
@@ -86,12 +99,40 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
         viewSuperior = findViewById(R.id.tvSuperior);
         viewMig = findViewById(R.id.tvMig);
         viewInferior = findViewById(R.id.tvInferior);
+        viewInferiorIntensity = findViewById(R.id.tvInferiorIntensity);
+        lyInferior = findViewById(R.id.lyInferior);
     }
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        getAccelerometer(event);
-//        getLuminic(event);
+        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER){
+            getAccelerometer(event);
+        }
+
+        if (event.sensor.getType() == Sensor.TYPE_LIGHT){
+            getLuminic(event);
+        }
+    }
+
+    private void getLuminic(SensorEvent event) {
+
+        float value = event.values[0];
+        long actualTime = System.currentTimeMillis();
+
+        if (actualTime - lastUpdate < 200) {
+            return;
+        }
+        lastUpdate = actualTime;
+
+        viewInferior.setText(String.format(Locale.getDefault(),"Value: %s", value));
+
+        if (value < LOW){
+            viewInferiorIntensity.setText(getText(R.string.low));
+        } else if( value < MEDIUM ) {
+            viewInferiorIntensity.setText(getText(R.string.medium));
+        } else {
+            viewInferiorIntensity.setText(getText(R.string.high));
+        }
     }
 
     private void getAccelerometer(SensorEvent event) {

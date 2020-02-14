@@ -7,5 +7,10 @@
     <string name="shake">Shake to get a toast and to switch color</string>
     <string name="shuffed">Device was shuffed</string>
     <string name="noAccel">Sorry, there is no accelerometer</string>
+    <string name="luminic">Luminic sensor exist</string>
+    <string name="noLuminic">Lumic sensor not exist.</string>
+    <string name="low">LOW intensity</string>
+    <string name="medium">MEDIUM intensity</string>
+    <string name="high">HIGH intensity</string>
 
 </resources>
