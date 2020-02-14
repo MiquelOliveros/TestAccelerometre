@@ -8,10 +8,14 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 
+import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Locale;
 
 public class TestAccelerometreActivity extends Activity implements SensorEventListener {
@@ -21,15 +25,12 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
     private TextView viewSuperior;
     private TextView viewMig;
     private TextView viewInferior;
-    private TextView viewInferiorIntensity;
+    private ListView lvIntensity;
     private LinearLayout lyInferior;
+
     private long lastUpdate;
-
-    private float HIGH = 0f;
-    private float LOW = 1000f;
-    private float MEDIUM = 2000f;
-
-    private boolean sensor;
+    private ArrayAdapter<String> arrayAdapter;
+    private ArrayList<String> intensityList = new ArrayList<>();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -41,9 +42,6 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
 
         viewSuperior.setBackgroundColor(Color.GREEN);
         lyInferior.setBackgroundColor(Color.YELLOW);
-
-//        PackageManager manager = getPackageManager();
-//        sensor = manager.hasSystemFeature(PackageManager.FEATURE_SENSOR_ACCELEROMETER);
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
@@ -78,7 +76,7 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
 
                 String showCapabilities = "";
 
-                HIGH = luminic.getMaximumRange();
+                float HIGH = luminic.getMaximumRange();
 
                 showCapabilities = showCapabilities + getText(R.string.luminic) +
                         "\nMax Rang: " + HIGH;
@@ -89,18 +87,18 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
                 viewInferior.setText(R.string.noLuminic);
             }
         }
-        // register this class as a listener for the accelerometer sensor
 
+        arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, intensityList);
+        lvIntensity.setAdapter(arrayAdapter);
         lastUpdate = System.currentTimeMillis();
-
     }
 
     private void findViews() {
         viewSuperior = findViewById(R.id.tvSuperior);
         viewMig = findViewById(R.id.tvMig);
         viewInferior = findViewById(R.id.tvInferior);
-        viewInferiorIntensity = findViewById(R.id.tvInferiorIntensity);
         lyInferior = findViewById(R.id.lyInferior);
+        lvIntensity = findViewById(R.id.lvIntensity);
     }
 
     @Override
@@ -119,20 +117,23 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
         float value = event.values[0];
         long actualTime = System.currentTimeMillis();
 
-        if (actualTime - lastUpdate < 200) {
+        if (actualTime - lastUpdate < 2000) {
             return;
         }
         lastUpdate = actualTime;
 
         viewInferior.setText(String.format(Locale.getDefault(),"Value: %s", value));
 
+        float MEDIUM = 2000f;
+        float LOW = 1000f;
         if (value < LOW){
-            viewInferiorIntensity.setText(getText(R.string.low));
-        } else if( value < MEDIUM ) {
-            viewInferiorIntensity.setText(getText(R.string.medium));
+            intensityList.add(String.valueOf(getText(R.string.low)));
+        } else if( value < MEDIUM) {
+            intensityList.add(String.valueOf(getText(R.string.medium)));
         } else {
-            viewInferiorIntensity.setText(getText(R.string.high));
+            intensityList.add(String.valueOf(getText(R.string.high)));
         }
+        arrayAdapter.notifyDataSetChanged();
     }
 
     private void getAccelerometer(SensorEvent event) {
