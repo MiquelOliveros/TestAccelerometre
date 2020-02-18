@@ -122,16 +122,14 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
         }
         lastUpdate = actualTime;
 
-        viewInferior.setText(String.format(Locale.getDefault(),"Value: %s", value));
-
         float MEDIUM = 2000f;
         float LOW = 1000f;
         if (value < LOW){
-            intensityList.add(String.valueOf(getText(R.string.low)));
+            intensityList.add(0, String.format(Locale.getDefault(),"New value light sensor = %s \n", value) + getText(R.string.low));
         } else if( value < MEDIUM) {
-            intensityList.add(String.valueOf(getText(R.string.medium)));
+            intensityList.add(0, String.format(Locale.getDefault(),"New value light sensor = %s \n", value) + getText(R.string.medium));
         } else {
-            intensityList.add(String.valueOf(getText(R.string.high)));
+            intensityList.add(0, String.format(Locale.getDefault(),"New value light sensor = %s \n", value) + getText(R.string.high));
         }
         arrayAdapter.notifyDataSetChanged();
     }
