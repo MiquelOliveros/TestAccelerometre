@@ -46,6 +46,20 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
+        setSensorsListeners();
+
+        arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, intensityList);
+        lvIntensity.setAdapter(arrayAdapter);
+        lastUpdate = System.currentTimeMillis();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setSensorsListeners();
+    }
+
+    private void setSensorsListeners() {
         if (sensorManager != null) {
             Sensor accelerometre = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
             Sensor luminic = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
@@ -88,10 +102,6 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
                 viewInferior.setText(R.string.noLuminic);
             }
         }
-
-        arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, intensityList);
-        lvIntensity.setAdapter(arrayAdapter);
-        lastUpdate = System.currentTimeMillis();
     }
 
     private void findViews() {
@@ -172,6 +182,12 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
     protected void onPause() {
         // unregister listener
         super.onPause();
+        sensorManager.unregisterListener(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
         sensorManager.unregisterListener(this);
     }
 }
