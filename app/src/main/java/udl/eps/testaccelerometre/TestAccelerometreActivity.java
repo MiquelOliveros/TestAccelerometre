@@ -29,6 +29,7 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
     private LinearLayout lyInferior;
 
     private long lastUpdate;
+    private float lastValue = 0f;
     private ArrayAdapter<String> arrayAdapter;
     private ArrayList<String> intensityList = new ArrayList<>();
 
@@ -116,11 +117,11 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
 
         float value = event.values[0];
         long actualTime = System.currentTimeMillis();
-
-        if (actualTime - lastUpdate < 2000) {
+        if (actualTime - lastUpdate < 2000 || value == lastValue) {
             return;
         }
         lastUpdate = actualTime;
+        lastValue = value;
 
         float MEDIUM = 2000f;
         float LOW = 1000f;
