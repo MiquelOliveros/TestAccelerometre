@@ -1,5 +1,6 @@
 package udl.eps.testaccelerometre;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.graphics.Color;
 import android.hardware.Sensor;
@@ -8,6 +9,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -19,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 public class TestAccelerometreActivity extends Activity implements SensorEventListener {
+
+    private static final String TAG = "ActivityAccelerometer";
 
     private SensorManager sensorManager;
     private boolean color = false;
@@ -38,15 +42,13 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-
+        Log.i(TAG, "onCreate");
         findViews();
 
         viewSuperior.setBackgroundColor(Color.GREEN);
         lyInferior.setBackgroundColor(Color.YELLOW);
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-
-        setSensorsListeners();
 
         arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, intensityList);
         lvIntensity.setAdapter(arrayAdapter);
@@ -56,7 +58,40 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
     @Override
     protected void onResume() {
         super.onResume();
+        Log.i(TAG, "onResume");
         setSensorsListeners();
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        // Do something here if sensor accuracy changes.
+    }
+
+    @Override
+    protected void onPause() {
+        // unregister listener
+        super.onPause();
+        sensorManager.unregisterListener(this);
+        Log.i(TAG, "onPause: Unregistered sensorManager listener");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        sensorManager.unregisterListener(this);
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER){
+            getAccelerometer(event);
+            Log.i(TAG, "onSensorChanged: Type Sensor --> Accelerometer");
+        }
+
+        if (event.sensor.getType() == Sensor.TYPE_LIGHT){
+            getLuminic(event);
+            Log.i(TAG, "onSensorChanged: Type Sensor --> Light");
+        }
     }
 
     private void setSensorsListeners() {
@@ -111,23 +146,12 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
         lyInferior = findViewById(R.id.lyInferior);
         lvIntensity = findViewById(R.id.lvIntensity);
     }
-
-    @Override
-    public void onSensorChanged(SensorEvent event) {
-        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER){
-            getAccelerometer(event);
-        }
-
-        if (event.sensor.getType() == Sensor.TYPE_LIGHT){
-            getLuminic(event);
-        }
-    }
-
+    
     private void getLuminic(SensorEvent event) {
 
         float value = event.values[0];
         long actualTime = System.currentTimeMillis();
-        if (actualTime - lastUpdate < 2000 || value == lastValue) {
+        if (actualTime - lastUpdate < 1000 || value == lastValue) {
             return;
         }
         lastUpdate = actualTime;
@@ -136,13 +160,18 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
         float MEDIUM = 2000f;
         float LOW = 1000f;
         if (value < LOW){
-            intensityList.add(0, String.format(Locale.getDefault(),"New value light sensor = %s \n", value) + getText(R.string.low));
+            addTextToList(0,value, String.valueOf(getText(R.string.low)));
         } else if( value < MEDIUM) {
-            intensityList.add(0, String.format(Locale.getDefault(),"New value light sensor = %s \n", value) + getText(R.string.medium));
+            addTextToList(0,value, String.valueOf(getText(R.string.medium)));
         } else {
-            intensityList.add(0, String.format(Locale.getDefault(),"New value light sensor = %s \n", value) + getText(R.string.high));
+            addTextToList(0,value, String.valueOf(getText(R.string.high)));
         }
         arrayAdapter.notifyDataSetChanged();
+    }
+
+    public void addTextToList(int index, float value, String intensity) {
+        intensityList.add(index, String.format(Locale.getDefault(),"New value light sensor = %s \n", value) + intensity);
+        Log.i(TAG, "New luminic value");
     }
 
     private void getAccelerometer(SensorEvent event) {
@@ -171,23 +200,5 @@ public class TestAccelerometreActivity extends Activity implements SensorEventLi
             }
             color = !color;
         }
-    }
-
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        // Do something here if sensor accuracy changes.
-    }
-
-    @Override
-    protected void onPause() {
-        // unregister listener
-        super.onPause();
-        sensorManager.unregisterListener(this);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        sensorManager.unregisterListener(this);
     }
 }
